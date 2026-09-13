@@ -68,6 +68,7 @@ interface RouteFlowState {
   }) => string; // returns new order id
   approveOrder: (orderId: string) => void;
   rejectOrder: (orderId: string, reason: string) => void;
+  cancelOrder: (orderId: string, reason?: string) => void;
   startPickingOrder: (orderId: string) => void;
   completePackingOrder: (
     orderId: string,
@@ -210,9 +211,9 @@ export const useRouteFlowStore = create<RouteFlowState>()(
           r.id === visit.retailerId ? { ...r, visitStatus: "Visited" as const } : r
         );
 
-        // Update salesperson productive visits target
+        // Update salesperson shops giving business target
         const updatedTargets = get().targets.map((t) =>
-          t.metricName === "Productive Visits" && t.role === "salesperson"
+          (t.metricName === "Shops Giving Business" || t.metricName === "Productive Visits") && t.role === "salesperson"
             ? { ...t, currentValue: t.currentValue + 1 }
             : t
         );
@@ -278,18 +279,7 @@ export const useRouteFlowStore = create<RouteFlowState>()(
           };
         });
 
-        // Reserve stock
-        const updatedProducts = state.products.map((prod) => {
-          const ordered = items.find((i) => i.productId === prod.id);
-          if (!ordered) return prod;
-          const freeQty = prod.sku === "TEA-250" ? Math.floor(ordered.quantity / 10) : 0;
-          const totalUnitsToReserve = ordered.quantity + freeQty;
-          return {
-            ...prod,
-            reservedStock: prod.reservedStock + totalUnitsToReserve,
-          };
-        });
-
+        // Submitted orders reserve ZERO inventory.
         const newOrder: Order = {
           id: orderId,
           orderNumber,
@@ -321,13 +311,12 @@ export const useRouteFlowStore = create<RouteFlowState>()(
           role: "salesperson",
           userName: salespersonName,
           action: "New Order Booked",
-          details: `Order ${orderNumber} placed for ${retailer.name} (₹${totalAmount.toLocaleString("en-IN")}).`,
+          details: `Order ${orderNumber} placed for ${retailer.name} (₹${totalAmount.toLocaleString("en-IN")}). Zero stock reserved until Owner approval.`,
           entityId: orderId,
         };
 
         set({
           orders: [newOrder, ...state.orders],
-          products: updatedProducts,
           activityLog: [newActivity, ...state.activityLog],
         });
 
@@ -345,7 +334,25 @@ export const useRouteFlowStore = create<RouteFlowState>()(
         const order = state.orders.find((o) => o.id === orderId);
         if (!order) return;
 
+        // Idempotency: Approving an order reserves its approved quantities exactly once.
+        // Repeating action or refreshing must never duplicate reservations.
+        if (order.status !== "Submitted") {
+          return;
+        }
+
         const now = new Date().toISOString();
+
+        // Reserve stock for approved quantities exactly once
+        const updatedProducts = state.products.map((prod) => {
+          const item = order.items.find((i) => i.productId === prod.id);
+          if (!item) return prod;
+          const totalUnitsToReserve = item.quantity + (item.freeQuantity || 0);
+          return {
+            ...prod,
+            reservedStock: prod.reservedStock + totalUnitsToReserve,
+          };
+        });
+
         const updatedOrder: Order = {
           ...order,
           status: "Approved",
@@ -367,19 +374,20 @@ export const useRouteFlowStore = create<RouteFlowState>()(
           role: "owner",
           userName: "Amit Agarwal",
           action: "Order Approved",
-          details: `Order ${order.orderNumber} approved. Queued for Warehouse.`,
+          details: `Order ${order.orderNumber} approved. Inventory reserved and queued for warehouse.`,
           entityId: orderId,
         };
 
         set({
           orders: state.orders.map((o) => (o.id === orderId ? updatedOrder : o)),
+          products: updatedProducts,
           activityLog: [newActivity, ...state.activityLog],
         });
 
         get().addToast({
           type: "success",
           title: "Order Approved",
-          message: `Order ${order.orderNumber} approved and sent to Warehouse queue.`,
+          message: `Order ${order.orderNumber} approved and stock reserved.`,
         });
       },
 
@@ -388,18 +396,33 @@ export const useRouteFlowStore = create<RouteFlowState>()(
         const order = state.orders.find((o) => o.id === orderId);
         if (!order) return;
 
+        // Idempotency: Guard against duplicate actions
+        if (order.status === "Rejected" || order.status === "Cancelled" || order.status === "Delivered") {
+          return;
+        }
+
         const now = new Date().toISOString();
 
-        // Release reserved stock
-        const updatedProducts = state.products.map((prod) => {
-          const item = order.items.find((i) => i.productId === prod.id);
-          if (!item) return prod;
-          const totalUnits = item.quantity + (item.freeQuantity || 0);
-          return {
-            ...prod,
-            reservedStock: Math.max(0, prod.reservedStock - totalUnits),
-          };
-        });
+        // Release reservations only if order was previously in an approved/reserved status
+        const wasReserved = [
+          "Approved",
+          "Under Picking",
+          "Packed",
+          "Ready for Dispatch",
+          "Out for Delivery",
+        ].includes(order.status);
+
+        const updatedProducts = wasReserved
+          ? state.products.map((prod) => {
+              const item = order.items.find((i) => i.productId === prod.id);
+              if (!item) return prod;
+              const totalUnits = item.quantity + (item.freeQuantity || 0);
+              return {
+                ...prod,
+                reservedStock: Math.max(0, prod.reservedStock - totalUnits),
+              };
+            })
+          : state.products;
 
         const updatedOrder: Order = {
           ...order,
@@ -423,7 +446,7 @@ export const useRouteFlowStore = create<RouteFlowState>()(
           role: "owner",
           userName: "Amit Agarwal",
           action: "Order Rejected",
-          details: `Order ${order.orderNumber} rejected: ${reason}. Reserved stock released.`,
+          details: `Order ${order.orderNumber} rejected: ${reason}.${wasReserved ? " Reserved stock released." : ""}`,
           entityId: orderId,
         };
 
@@ -437,6 +460,77 @@ export const useRouteFlowStore = create<RouteFlowState>()(
           type: "warning",
           title: "Order Rejected",
           message: `Order ${order.orderNumber} has been rejected.`,
+        });
+      },
+
+      cancelOrder: (orderId, reason = "Cancelled by store") => {
+        const state = get();
+        const order = state.orders.find((o) => o.id === orderId);
+        if (!order) return;
+
+        if (order.status === "Cancelled" || order.status === "Rejected" || order.status === "Delivered") {
+          return;
+        }
+
+        const now = new Date().toISOString();
+
+        // Release reservations only if order was previously in an approved/reserved status
+        const wasReserved = [
+          "Approved",
+          "Under Picking",
+          "Packed",
+          "Ready for Dispatch",
+          "Out for Delivery",
+        ].includes(order.status);
+
+        const updatedProducts = wasReserved
+          ? state.products.map((prod) => {
+              const item = order.items.find((i) => i.productId === prod.id);
+              if (!item) return prod;
+              const totalUnits = item.quantity + (item.freeQuantity || 0);
+              return {
+                ...prod,
+                reservedStock: Math.max(0, prod.reservedStock - totalUnits),
+              };
+            })
+          : state.products;
+
+        const updatedOrder: Order = {
+          ...order,
+          status: "Cancelled",
+          rejectionReason: reason,
+          updatedAt: now,
+          statusTimeline: [
+            ...order.statusTimeline,
+            {
+              status: "Cancelled",
+              timestamp: now,
+              updatedBy: "Amit Agarwal (Owner)",
+              notes: `Cancelled: ${reason}`,
+            },
+          ],
+        };
+
+        const newActivity: ActivityItem = {
+          id: `act-${Date.now()}`,
+          timestamp: now,
+          role: "owner",
+          userName: "Amit Agarwal",
+          action: "Order Cancelled",
+          details: `Order ${order.orderNumber} cancelled.${wasReserved ? " Reserved stock released." : ""}`,
+          entityId: orderId,
+        };
+
+        set({
+          orders: state.orders.map((o) => (o.id === orderId ? updatedOrder : o)),
+          products: updatedProducts,
+          activityLog: [newActivity, ...state.activityLog],
+        });
+
+        get().addToast({
+          type: "info",
+          title: "Order Cancelled",
+          message: `Order ${order.orderNumber} has been cancelled.`,
         });
       },
 
@@ -684,7 +778,7 @@ export const useRouteFlowStore = create<RouteFlowState>()(
       }) => {
         const state = get();
         const delivery = state.deliveries.find((d) => d.id === deliveryId);
-        if (!delivery) return;
+        if (!delivery || delivery.status === "Delivered") return;
 
         const order = state.orders.find((o) => o.id === delivery.orderId);
         const now = new Date().toISOString();

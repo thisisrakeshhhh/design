@@ -88,7 +88,7 @@ export function PaymentCollect() {
             >
               {retailers.map((r) => (
                 <option key={r.id} value={r.id}>
-                  {r.name} — Outstanding: {formatCurrency(r.pendingAmount)}
+                  {r.name} — Payment Due: {formatCurrency(r.pendingAmount)}
                 </option>
               ))}
             </select>

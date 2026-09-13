@@ -55,7 +55,7 @@ export function DeliveryDash() {
         <MetricCard
           label="Assigned"
           value={deliveries.length}
-          subtext="Today's consignment"
+          subtext="Today's deliveries"
           icon={Truck}
           variant="brand"
           onClick={() => setActiveTab("deliveries")}
@@ -104,14 +104,14 @@ export function DeliveryDash() {
       <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-sm font-bold text-slate-900">Today&apos;s Assigned Consignments</h3>
-            <p className="text-xs text-slate-500">Mansarovar Corridor Logistics Van #RJ-14-EA-4821</p>
+            <h3 className="text-sm font-bold text-slate-900">Today&apos;s Assigned Deliveries</h3>
+            <p className="text-xs text-slate-500">Mansarovar Delivery Vehicle #RJ-14-EA-4821</p>
           </div>
           <button
             onClick={() => setActiveTab("deliveries")}
             className="text-xs font-bold text-blue-700 hover:underline"
           >
-            Full Trip Manifest ({deliveries.length}) →
+            Today&apos;s Deliveries ({deliveries.length}) →
           </button>
         </div>
 

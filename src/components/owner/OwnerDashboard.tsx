@@ -7,13 +7,16 @@ import { MetricCard } from "@/components/shared/MetricCard";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import {
   TrendingUp,
-  Truck,
   Wallet,
   AlertCircle,
-  Package,
   Clock,
   ArrowRight,
   ChevronRight,
+  CheckCircle2,
+  Boxes,
+  Store,
+  UserCheck,
+  FileSpreadsheet,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -35,36 +38,26 @@ const SEVEN_DAY_SALES = [
 ];
 
 export function OwnerDashboard() {
-  const { orders, products, retailers, employees, targets, setActiveTab } =
+  const { orders, products, retailers, employees, targets, payments, setActiveTab } =
     useRouteFlowStore();
 
-  // Metrics calculations
+  // 1. First Five Values calculations
   const todayBookedSales = useMemo(() => {
     return orders
       .filter((o) => o.status !== "Rejected" && o.status !== "Cancelled")
       .reduce((acc, o) => acc + o.totalAmount, 0);
   }, [orders]);
 
-  const todayDeliveredSales = useMemo(() => {
-    return orders
-      .filter((o) => o.status === "Delivered")
-      .reduce((acc, o) => acc + o.totalAmount, 0);
-  }, [orders]);
+  const paymentCollected = useMemo(() => {
+    return payments.reduce((acc, p) => acc + p.amount, 0);
+  }, [payments]);
 
-  const totalOutstanding = useMemo(() => {
+  const paymentDue = useMemo(() => {
     return retailers.reduce((acc, r) => acc + r.pendingAmount, 0);
   }, [retailers]);
 
-  const pendingApprovals = useMemo(() => {
+  const ordersWaiting = useMemo(() => {
     return orders.filter((o) => o.status === "Submitted");
-  }, [orders]);
-
-  const ordersBeingPacked = useMemo(() => {
-    return orders.filter((o) => o.status === "Picking" || o.status === "Packed");
-  }, [orders]);
-
-  const ordersOutForDelivery = useMemo(() => {
-    return orders.filter((o) => o.status === "Out for Delivery");
   }, [orders]);
 
   const lowStockProducts = useMemo(() => {
@@ -76,7 +69,7 @@ export function OwnerDashboard() {
   return (
     <div className="space-y-6">
       {/* Top Banner Alert for Pending Approvals */}
-      {pendingApprovals.length > 0 && (
+      {ordersWaiting.length > 0 && (
         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0">
@@ -84,95 +77,170 @@ export function OwnerDashboard() {
             </div>
             <div>
               <p className="text-xs font-bold text-amber-950">
-                {pendingApprovals.length} Wholesale Order(s) Awaiting Approval
+                {ordersWaiting.length} Wholesale Order(s) Waiting for Approval
               </p>
               <p className="text-[11px] text-amber-800">
-                Immediate action required for RF-2026-00482 (Sharma General Store).
+                Action required for {ordersWaiting[0].orderNumber} ({ordersWaiting[0].retailerName}).
               </p>
             </div>
           </div>
           <button
             onClick={() => setActiveTab("orders")}
-            className="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors min-h-[40px] shrink-0"
+            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors min-h-[40px] shrink-0"
           >
-            <span>Review Orders</span>
+            <span>Approve Orders</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
       )}
 
-      {/* 8 Key Operational Metrics Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <MetricCard
-          label="Today's Booked Sales"
-          value={formatCurrency(todayBookedSales)}
-          subtext="Total orders booked"
-          icon={TrendingUp}
-          variant="brand"
-        />
-        <MetricCard
-          label="Delivered Sales"
-          value={formatCurrency(todayDeliveredSales)}
-          subtext="Delivered & confirmed"
-          icon={Truck}
-          variant="success"
-        />
-        <MetricCard
-          label="Payments Collected"
-          value={formatCurrency(6000)}
-          subtext="Today's collections"
-          icon={Wallet}
-          variant="default"
-        />
-        <MetricCard
-          label="Retailer Outstanding"
-          value={formatCurrency(totalOutstanding)}
-          subtext="Across 6 retailers"
-          icon={AlertCircle}
-          variant="warning"
-        />
+      {/* 1. First Five Values requested by Owner */}
+      <div>
+        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">
+          Key Business Numbers
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+          <MetricCard
+            label="Today's Sales"
+            value={formatCurrency(todayBookedSales)}
+            subtext="Total booked today"
+            icon={TrendingUp}
+            variant="brand"
+          />
+          <MetricCard
+            label="Payment Collected"
+            value={formatCurrency(paymentCollected)}
+            subtext="Cash & UPI received"
+            icon={Wallet}
+            variant="success"
+          />
+          <MetricCard
+            label="Payment Due"
+            value={formatCurrency(paymentDue)}
+            subtext="Across all retail shops"
+            icon={AlertCircle}
+            variant="warning"
+          />
+          <MetricCard
+            label="Orders Waiting"
+            value={ordersWaiting.length}
+            subtext="Waiting for your approval"
+            icon={Clock}
+            variant={ordersWaiting.length > 0 ? "warning" : "default"}
+            onClick={() => setActiveTab("orders")}
+          />
+          <MetricCard
+            label="Low Stock"
+            value={lowStockProducts.length}
+            subtext="Items below minimum limit"
+            icon={Boxes}
+            variant={lowStockProducts.length > 0 ? "danger" : "default"}
+            onClick={() => setActiveTab("inventory")}
+          />
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-        <MetricCard
-          label="Pending Approvals"
-          value={pendingApprovals.length}
-          subtext="Awaiting credit clearance"
-          icon={Clock}
-          variant={pendingApprovals.length > 0 ? "warning" : "default"}
-          onClick={() => setActiveTab("orders")}
-        />
-        <MetricCard
-          label="Orders In Packing"
-          value={ordersBeingPacked.length}
-          subtext="In Jaipur Main WH"
-          icon={Package}
-          variant="default"
-        />
-        <MetricCard
-          label="Out For Delivery"
-          value={ordersOutForDelivery.length}
-          subtext="With Suresh Yadav"
-          icon={Truck}
-          variant="default"
-        />
-        <MetricCard
-          label="Low Stock Items"
-          value={lowStockProducts.length}
-          subtext="Below safety threshold"
-          icon={AlertCircle}
-          variant={lowStockProducts.length > 0 ? "danger" : "default"}
-          onClick={() => setActiveTab("inventory")}
-        />
+      {/* 2. Primary Large Actions */}
+      <div>
+        <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">
+          Quick Actions
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <button
+            onClick={() => setActiveTab("orders")}
+            className="p-4 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-400 rounded-xl shadow-xs transition-all flex flex-col items-center text-center group min-h-[90px] justify-center"
+          >
+            <div className="relative mb-2">
+              <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-900 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <CheckCircle2 className="w-5 h-5 text-blue-800" />
+              </div>
+              {ordersWaiting.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-amber-500 text-white font-mono font-bold text-[10px] w-5 h-5 rounded-full flex items-center justify-center shadow-xs">
+                  {ordersWaiting.length}
+                </span>
+              )}
+            </div>
+            <span className="text-xs font-bold text-slate-900">Approve Orders</span>
+            <span className="text-[10px] text-slate-500 mt-0.5">
+              {ordersWaiting.length} waiting
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("inventory")}
+            className="p-4 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-400 rounded-xl shadow-xs transition-all flex flex-col items-center text-center group min-h-[90px] justify-center"
+          >
+            <div className="relative mb-2">
+              <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-900 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Boxes className="w-5 h-5 text-emerald-800" />
+              </div>
+              {lowStockProducts.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-rose-500 text-white font-mono font-bold text-[10px] w-5 h-5 rounded-full flex items-center justify-center shadow-xs">
+                  {lowStockProducts.length}
+                </span>
+              )}
+            </div>
+            <span className="text-xs font-bold text-slate-900">Check Stock</span>
+            <span className="text-[10px] text-slate-500 mt-0.5">
+              {products.length} products
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("retailers")}
+            className="p-4 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-400 rounded-xl shadow-xs transition-all flex flex-col items-center text-center group min-h-[90px] justify-center"
+          >
+            <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-900 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
+              <Wallet className="w-5 h-5 text-amber-800" />
+            </div>
+            <span className="text-xs font-bold text-slate-900">View Payments</span>
+            <span className="text-[10px] text-slate-500 mt-0.5">Ledger & balance</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("retailers")}
+            className="p-4 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-400 rounded-xl shadow-xs transition-all flex flex-col items-center text-center group min-h-[90px] justify-center"
+          >
+            <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-900 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
+              <Store className="w-5 h-5 text-purple-800" />
+            </div>
+            <span className="text-xs font-bold text-slate-900">View Retailers</span>
+            <span className="text-[10px] text-slate-500 mt-0.5">
+              {retailers.length} shops in Jaipur
+            </span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("employees")}
+            className="p-4 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-400 rounded-xl shadow-xs transition-all flex flex-col items-center text-center group min-h-[90px] justify-center"
+          >
+            <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-900 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
+              <UserCheck className="w-5 h-5 text-indigo-800" />
+            </div>
+            <span className="text-xs font-bold text-slate-900">Employee Progress</span>
+            <span className="text-[10px] text-slate-500 mt-0.5">Sales & delivery</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("reports")}
+            className="p-4 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-400 rounded-xl shadow-xs transition-all flex flex-col items-center text-center group min-h-[90px] justify-center"
+          >
+            <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-900 flex items-center justify-center mb-2 group-hover:scale-105 transition-transform">
+              <FileSpreadsheet className="w-5 h-5 text-slate-800" />
+            </div>
+            <span className="text-xs font-bold text-slate-900">Daily Report</span>
+            <span className="text-[10px] text-slate-500 mt-0.5">Summary & charts</span>
+          </button>
+        </div>
       </div>
 
-      {/* Charts & Operational Progress */}
+      {/* 3. Charts & Detailed Performance (Positioned below primary actions) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 7-day Sales Bar Chart */}
         <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-4 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-sm font-bold text-slate-900">7-Day Wholesale Sales Trend</h3>
+              <h3 className="text-sm font-bold text-slate-900">7-Day Sales Trend</h3>
               <p className="text-xs text-slate-500">Daily booked order values (in ₹)</p>
             </div>
             <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
@@ -191,7 +259,7 @@ export function OwnerDashboard() {
                   tickLine={false}
                 />
                 <Tooltip
-                  formatter={(value) => [formatCurrency(Number(value || 0)), "Wholesale Sales"]}
+                  formatter={(value) => [formatCurrency(Number(value || 0)), "Sales"]}
                   contentStyle={{
                     backgroundColor: "#0f172a",
                     borderColor: "#1e293b",
@@ -206,13 +274,13 @@ export function OwnerDashboard() {
           </div>
         </div>
 
-        {/* Salesperson Target Progress */}
+        {/* Salesperson Progress */}
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-bold text-slate-900">Field Sales Performance</h3>
+              <h3 className="text-sm font-bold text-slate-900">Salesperson Progress</h3>
               <span className="text-[11px] font-bold text-blue-900 bg-blue-50 px-2 py-0.5 rounded">
-                Beat-04
+                Mansarovar West
               </span>
             </div>
 
@@ -222,7 +290,7 @@ export function OwnerDashboard() {
               </div>
               <div>
                 <p className="text-xs font-bold text-slate-900">{salesperson?.name || "Rakesh Kumar"}</p>
-                <p className="text-[11px] text-slate-500">Mansarovar West Route</p>
+                <p className="text-[11px] text-slate-500">Mansarovar West Beat</p>
               </div>
             </div>
 
@@ -264,26 +332,26 @@ export function OwnerDashboard() {
             onClick={() => setActiveTab("targets")}
             className="w-full mt-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg text-xs font-bold transition-colors min-h-[40px] flex items-center justify-center gap-1"
           >
-            <span>View All Targets & Incentives</span>
+            <span>Set Targets & Incentives</span>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
 
-      {/* Low Stock Watchlist & Recent Orders */}
+      {/* Low Stock Products & Recent Orders */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Low stock watchlist */}
+        {/* Low Stock Products */}
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-sm font-bold text-slate-900">Warehouse Low Stock Watchlist</h3>
-              <p className="text-xs text-slate-500">Products near or below reorder threshold</p>
+              <h3 className="text-sm font-bold text-slate-900">Low Stock Products</h3>
+              <p className="text-xs text-slate-500">Products near or below minimum limit</p>
             </div>
             <button
               onClick={() => setActiveTab("inventory")}
               className="text-xs font-bold text-blue-700 hover:underline"
             >
-              Manage Stock →
+              Check Stock →
             </button>
           </div>
 
@@ -312,7 +380,7 @@ export function OwnerDashboard() {
                         {prod.warehouseStock} {prod.unit} left
                       </span>
                       <p className="text-[10px] text-slate-400 mt-0.5">
-                        Threshold: {prod.lowStockThreshold}
+                        Minimum: {prod.lowStockThreshold}
                       </p>
                     </div>
                   </div>
@@ -326,7 +394,7 @@ export function OwnerDashboard() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-sm font-bold text-slate-900">Recent Wholesale Orders</h3>
-              <p className="text-xs text-slate-500">Live order pipeline</p>
+              <p className="text-xs text-slate-500">Latest orders from retail shops</p>
             </div>
             <button
               onClick={() => setActiveTab("orders")}

@@ -69,7 +69,7 @@ export function OwnerInventory() {
         </div>
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-            Stock Valuation
+            Stock Value
           </span>
           <p className="text-xl font-extrabold text-blue-900 mt-1">
             {formatCurrency(totalInventoryValue)}

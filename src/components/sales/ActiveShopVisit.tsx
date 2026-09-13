@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouteFlowStore } from "@/store/useRouteFlowStore";
 import { formatCurrency } from "@/lib/formatters";
 import { ShopStockCheck } from "./ShopStockCheck";
@@ -15,6 +15,10 @@ import {
   RotateCcw,
   CheckSquare,
   ArrowLeft,
+  Clock,
+  AlertCircle,
+  Phone,
+  MapPin,
 } from "lucide-react";
 
 interface ActiveShopVisitProps {
@@ -25,10 +29,27 @@ export function ActiveShopVisit({ onBackToBeat }: ActiveShopVisitProps) {
   const { activeVisit, completeActiveVisit, retailers, addToast } = useRouteFlowStore();
 
   const [activeTab, setActiveTab] = useState<
-    "stock" | "order" | "payment" | "return" | "note"
-  >("stock");
+    "overview" | "stock" | "order" | "payment"
+  >("overview");
 
-  const visitNotes = activeVisit?.notes || "Shopkeeper requested prompt delivery by 4 PM today.";
+  // Calculate visit time dynamically
+  const [elapsedMinutes, setElapsedMinutes] = useState(14);
+  const [elapsedSeconds, setElapsedSeconds] = useState(25);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setElapsedSeconds((prev) => {
+        if (prev >= 59) {
+          setElapsedMinutes((m) => m + 1);
+          return 0;
+        }
+        return prev + 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const visitNotes = activeVisit?.notes || "Shopkeeper requested delivery by 4 PM today.";
 
   const [returnItem, setReturnItem] = useState("Mustard Oil 1L (1 damaged bottle)");
   const [returnReason, setReturnReason] = useState("Leaked seal during transit");
@@ -67,7 +88,7 @@ export function ActiveShopVisit({ onBackToBeat }: ActiveShopVisitProps) {
 
   return (
     <div className="space-y-4">
-      {/* Active Visit Top Bar */}
+      {/* Active Visit Header */}
       <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs">
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <button
@@ -75,7 +96,7 @@ export function ActiveShopVisit({ onBackToBeat }: ActiveShopVisitProps) {
             className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 min-h-[40px]"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Beat List</span>
+            <span>Today&apos;s Beat</span>
           </button>
 
           <div className="flex items-center gap-2">
@@ -89,26 +110,28 @@ export function ActiveShopVisit({ onBackToBeat }: ActiveShopVisitProps) {
         <div className="pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-800 bg-blue-50 px-2 py-0.5 rounded">
-              Active Beat Visit • BEAT-04
+              Active Visit • Mansarovar West
             </span>
             <h2 className="text-xl font-extrabold text-slate-950 mt-1">
               {activeVisit.retailerName}
             </h2>
             <p className="text-xs text-slate-500">
-              Sector 9, Mansarovar • Prop: Mohan Sharma
+              Proprietor: {retailer?.ownerName || "Mohan Sharma"} • {retailer?.address || "Sector 9, Mansarovar"}
             </p>
           </div>
 
           <div className="flex items-center gap-4 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
             <div>
-              <span className="text-[10px] text-slate-400 uppercase font-bold block">
-                Visit Started
+              <span className="text-[10px] text-slate-400 uppercase font-bold block flex items-center gap-1">
+                <Clock className="w-3 h-3" /> Visit Time
               </span>
-              <span className="font-bold text-slate-800">09:30 AM (28m)</span>
+              <span className="font-mono font-bold text-slate-900">
+                {String(elapsedMinutes).padStart(2, "0")}m {String(elapsedSeconds).padStart(2, "0")}s
+              </span>
             </div>
             <div className="border-l border-slate-200 pl-4">
               <span className="text-[10px] text-slate-400 uppercase font-bold block">
-                Pending Balance
+                Payment Due
               </span>
               <span className="font-extrabold text-amber-700">
                 {formatCurrency(retailer?.pendingAmount || 3250)}
@@ -117,8 +140,19 @@ export function ActiveShopVisit({ onBackToBeat }: ActiveShopVisitProps) {
           </div>
         </div>
 
-        {/* 5 Visit Action Sub-Tabs */}
+        {/* Action Tabs */}
         <div className="pt-4 flex items-center gap-1.5 overflow-x-auto scrollbar-none border-t border-slate-100 mt-4">
+          <button
+            onClick={() => setActiveTab("overview")}
+            className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 whitespace-nowrap min-h-[40px] ${
+              activeTab === "overview"
+                ? "bg-blue-900 text-white shadow-xs"
+                : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+            }`}
+          >
+            <span>Visit Overview</span>
+          </button>
+
           <button
             onClick={() => setActiveTab("stock")}
             className={`px-3 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 whitespace-nowrap min-h-[40px] ${
@@ -173,22 +207,89 @@ export function ActiveShopVisit({ onBackToBeat }: ActiveShopVisitProps) {
         </div>
       </div>
 
-      {/* Tab Contents */}
+      {/* 1. Active Visit Overview */}
+      {activeTab === "overview" && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+          <div className="bg-blue-50/60 border border-blue-200 rounded-xl p-3.5 text-xs text-blue-950 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-blue-700 shrink-0" />
+            <span>Check shop stock, book new order, and collect payment if due.</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                Shop Details
+              </span>
+              <p className="font-extrabold text-sm text-slate-900 mt-1">
+                {retailer?.name || activeVisit.retailerName}
+              </p>
+              <p className="text-xs text-slate-600 mt-0.5 flex items-center gap-1">
+                <MapPin className="w-3 h-3 text-slate-400" />
+                <span>{retailer?.address}</span>
+              </p>
+              <p className="text-xs text-slate-600 mt-0.5 flex items-center gap-1">
+                <Phone className="w-3 h-3 text-slate-400" />
+                <span>{retailer?.phone}</span>
+              </p>
+            </div>
+
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                Payment Due
+              </span>
+              <p className="font-extrabold text-lg text-amber-700 mt-1">
+                {formatCurrency(retailer?.pendingAmount || 3250)}
+              </p>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Credit Limit: {formatCurrency(retailer?.creditLimit || 20000)}
+              </p>
+            </div>
+
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                Visit Timer
+              </span>
+              <p className="font-mono font-extrabold text-lg text-blue-900 mt-1">
+                {String(elapsedMinutes).padStart(2, "0")}m {String(elapsedSeconds).padStart(2, "0")}s
+              </p>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Status: In Progress
+              </p>
+            </div>
+          </div>
+
+          <div className="pt-2">
+            <button
+              onClick={() => setActiveTab("stock")}
+              className="w-full py-3.5 px-4 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-sm rounded-xl flex items-center justify-center gap-2 shadow-xs transition-all min-h-[48px]"
+            >
+              <Package className="w-4 h-4" />
+              <span>Check Shop Stock</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 2. Stock Check: Shown after pressing Check Stock */}
       {activeTab === "stock" && <ShopStockCheck />}
+
+      {/* 3. Order Booking */}
       {activeTab === "order" && (
         <OrderBooking
           defaultRetailerId={activeVisit.retailerId}
           onOrderSuccess={() => setActiveTab("stock")}
         />
       )}
+
+      {/* 4. Payment Collection */}
       {activeTab === "payment" && <PaymentCollect />}
 
       {/* Record Return Modal */}
       <Modal
         isOpen={isReturnModalOpen}
         onClose={() => setIsReturnModalOpen(false)}
-        title="Record Shop Goods Return"
-        subtitle={`Retailer: ${activeVisit.retailerName}`}
+        title="Record Goods Return"
+        subtitle={`Shop: ${activeVisit.retailerName}`}
         maxWidth="sm"
       >
         <form onSubmit={handleRecordReturn} className="space-y-4 text-xs">

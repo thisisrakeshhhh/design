@@ -43,7 +43,7 @@ export function ShopStockCheck() {
     <div className="space-y-4">
       <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-900">
         <p className="font-bold flex items-center gap-1.5">
-          <AlertCircle className="w-4 h-4 text-amber-700" /> Physical Shelf Audit Guidelines
+          <AlertCircle className="w-4 h-4 text-amber-700" /> Check Shop Stock
         </p>
         <p className="text-[11px] text-amber-800 mt-1">
           Clearly count physical shelf inventory. Notice that <strong>Shop Stock</strong> tracks what the retailer already has, while <strong>Order Quantity</strong> defines the new replenishment units to be invoiced.

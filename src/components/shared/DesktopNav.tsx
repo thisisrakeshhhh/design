@@ -40,11 +40,11 @@ export function DesktopNav() {
             icon: ShoppingCart,
             badge: pendingOrderCount > 0 ? `${pendingOrderCount} pending` : undefined,
           },
-          { id: "inventory", label: "Inventory", icon: Package },
+          { id: "inventory", label: "Stock", icon: Package },
           { id: "retailers", label: "Retailers", icon: Store },
           { id: "employees", label: "Employees", icon: Users },
           { id: "routes", label: "Routes & Beats", icon: MapPin },
-          { id: "targets", label: "Targets & Incentives", icon: Target },
+          { id: "targets", label: "Set Targets", icon: Target },
           { id: "reports", label: "Reports", icon: FileText },
         ];
       case "salesperson":
@@ -60,18 +60,18 @@ export function DesktopNav() {
           { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
           {
             id: "pending-orders",
-            label: "Pending Orders",
+            label: "Orders to Pack",
             icon: ShoppingCart,
             badge: approvedOrderCount > 0 ? `${approvedOrderCount}` : undefined,
           },
-          { id: "inventory", label: "Inventory", icon: Package },
+          { id: "inventory", label: "Stock", icon: Package },
           { id: "returns", label: "Returns", icon: RotateCcw },
           { id: "summary", label: "Daily Summary", icon: Clock },
         ];
       case "delivery":
         return [
           { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
-          { id: "deliveries", label: "Deliveries", icon: Truck },
+          { id: "deliveries", label: "Today's Deliveries", icon: Truck },
           { id: "collections", label: "Collections", icon: Wallet },
           { id: "returns", label: "Returns", icon: RotateCcw },
           { id: "summary", label: "Daily Summary", icon: FileText },

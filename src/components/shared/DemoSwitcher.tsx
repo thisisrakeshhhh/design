@@ -24,25 +24,25 @@ const ROLES: {
   {
     role: "owner",
     name: "Amit Agarwal",
-    title: "Owner / Director",
+    title: "Owner",
     icon: Shield,
   },
   {
     role: "salesperson",
     name: "Rakesh Kumar",
-    title: "Sales Officer (Mansarovar)",
+    title: "Salesperson",
     icon: Briefcase,
   },
   {
     role: "warehouse",
     name: "Manoj Sharma",
-    title: "Warehouse Lead",
+    title: "Warehouse",
     icon: Package,
   },
   {
     role: "delivery",
     name: "Suresh Yadav",
-    title: "Delivery Executive",
+    title: "Delivery",
     icon: Truck,
   },
 ];

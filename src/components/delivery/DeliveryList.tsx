@@ -38,11 +38,11 @@ export function DeliveryList() {
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
             <h3 className="text-base font-extrabold text-slate-900">
-              Assigned Deliveries & Trip Manifest
+              Today&apos;s Deliveries
             </h3>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Logistics Executive: Suresh Yadav • Route Van #RJ-14-EA-4821
+            Delivery Executive: Suresh Yadav • Route Vehicle #RJ-14-EA-4821
           </p>
         </div>
 
@@ -58,6 +58,7 @@ export function DeliveryList() {
           const isDelivered = del.status === "Delivered";
           const isOut = del.status === "Out for Delivery";
           const isFailed = del.status === "Failed";
+          const isCredit = del.paymentType === "Credit";
 
           return (
             <div
@@ -110,10 +111,23 @@ export function DeliveryList() {
                 <div className="text-right shrink-0">
                   <StatusBadge status={del.status} size="sm" />
                   <div className="mt-2 text-xs">
-                    <span className="text-[10px] text-slate-400 block">Collect</span>
-                    <span className="font-extrabold text-slate-900">
-                      {del.amountToCollect > 0 ? formatCurrency(del.amountToCollect) : "Credit"}
-                    </span>
+                    {isCredit ? (
+                      <>
+                        <span className="text-[10px] font-bold text-blue-900 bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200 block">
+                          Payment: Credit
+                        </span>
+                        <span className="font-extrabold text-slate-700 text-xs mt-1 block">
+                          Collect Now: ₹0
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="text-[10px] text-slate-400 block">Amount to Collect</span>
+                        <span className="font-extrabold text-slate-900">
+                          {formatCurrency(del.amountToCollect)}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

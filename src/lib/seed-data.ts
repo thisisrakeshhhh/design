@@ -20,7 +20,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     mrp: 140,
     retailerPrice: 118,
     warehouseStock: 84,
-    reservedStock: 11, // for RF-2026-00482
+    reservedStock: 0,
     lowStockThreshold: 20,
     scheme: "Buy 10, get 1 free",
   },
@@ -33,7 +33,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     mrp: 240,
     retailerPrice: 205,
     warehouseStock: 30,
-    reservedStock: 8,
+    reservedStock: 0,
     lowStockThreshold: 10,
   },
   {
@@ -45,7 +45,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     mrp: 175,
     retailerPrice: 158,
     warehouseStock: 8, // Low stock!
-    reservedStock: 4,
+    reservedStock: 0,
     lowStockThreshold: 15,
   },
   {
@@ -549,12 +549,12 @@ export const INITIAL_TARGETS: Target[] = [
     employeeId: "emp-sales-1",
     employeeName: "Rakesh Kumar",
     role: "salesperson",
-    metricName: "Productive Visits",
+    metricName: "Shops Giving Business",
     targetValue: 150,
     currentValue: 108,
     unit: "Shops",
     month: "September 2026",
-    incentiveRate: "₹30 per productive visit over 100",
+    incentiveRate: "₹30 per shop order over 100",
     estimatedIncentive: 240,
     approvedIncentive: 200,
   },
@@ -761,4 +761,4 @@ export const INITIAL_ACTIVE_VISIT: ShopVisit = {
   completed: false,
 };
 
-export const SEED_DATA_VERSION = "routeflow_v2.0_jaipur";
+export const SEED_DATA_VERSION = "routeflow_v3.0_jaipur";

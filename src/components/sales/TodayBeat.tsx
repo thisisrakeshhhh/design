@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useRouteFlowStore } from "@/store/useRouteFlowStore";
 import { formatCurrency } from "@/lib/formatters";
-import { StatusBadge } from "@/components/shared/StatusBadge";
 import { ActiveShopVisit } from "./ActiveShopVisit";
 import {
   MapPin,
@@ -33,7 +32,7 @@ export function TodayBeat() {
             </h3>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
-            Follow planned visit sequence for maximum efficiency
+            Visit shops in sequence, check stock, and book orders.
           </p>
         </div>
 
@@ -96,9 +95,17 @@ export function TodayBeat() {
                 </div>
 
                 <div className="text-right shrink-0">
-                  <StatusBadge status={isVisited ? "Visited" : "Pending"} size="sm" />
+                  {isVisited ? (
+                    <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      Visited
+                    </span>
+                  ) : (
+                    <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
+                      Visit: Not Started
+                    </span>
+                  )}
                   <div className="mt-2 text-xs">
-                    <span className="text-[10px] text-slate-400 block">Pending</span>
+                    <span className="text-[10px] text-slate-400 block">Payment Due</span>
                     <span
                       className={`font-bold ${
                         r.pendingAmount > 0 ? "text-amber-700" : "text-emerald-700"

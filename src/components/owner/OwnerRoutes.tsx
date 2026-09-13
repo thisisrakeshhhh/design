@@ -130,7 +130,7 @@ export function OwnerRoutes() {
 
                   <div className="flex items-center gap-3 text-right">
                     <div>
-                      <span className="text-[10px] text-slate-400 block">Outstanding</span>
+                      <span className="text-[10px] text-slate-400 block">Payment Due</span>
                       <span className="font-bold text-slate-800">
                         {formatCurrency(r.pendingAmount)}
                       </span>

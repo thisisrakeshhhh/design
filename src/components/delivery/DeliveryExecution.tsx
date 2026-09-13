@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouteFlowStore } from "@/store/useRouteFlowStore";
+import { formatCurrency } from "@/lib/formatters";
 import { Delivery } from "@/types";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { Modal } from "@/components/shared/Modal";
@@ -85,7 +86,7 @@ export function DeliveryExecution({ delivery, onBack }: DeliveryExecutionProps) 
           className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 min-h-[40px]"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Trip Manifest</span>
+          <span>Today&apos;s Deliveries</span>
         </button>
 
         <div className="flex items-center gap-2">
@@ -99,7 +100,7 @@ export function DeliveryExecution({ delivery, onBack }: DeliveryExecutionProps) 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
           <div>
             <span className="text-[10px] font-extrabold uppercase text-blue-800 bg-blue-50 px-2 py-0.5 rounded">
-              Stop #{delivery.sequenceNumber} • Consignment Delivery
+              Stop #{delivery.sequenceNumber} • Order Delivery
             </span>
             <h2 className="text-xl font-extrabold text-slate-950 mt-1">
               {delivery.retailerName}
@@ -174,7 +175,7 @@ export function DeliveryExecution({ delivery, onBack }: DeliveryExecutionProps) 
             {order && (
               <div className="border border-slate-200 rounded-xl p-3 bg-slate-50/50 space-y-2 text-xs">
                 <h4 className="font-bold text-slate-900 uppercase text-[11px]">
-                  Consignment Cargo Checklist ({order.items.length} Products)
+                  Products to Deliver ({order.items.length} Products)
                 </h4>
                 <div className="divide-y divide-slate-200">
                   {order.items.map((it) => (
@@ -200,7 +201,7 @@ export function DeliveryExecution({ delivery, onBack }: DeliveryExecutionProps) 
             {/* Delivery Parameters: Full vs Partial */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
               <div>
-                <label className="font-bold text-slate-700 block mb-1">Fulfilment Type:</label>
+                <label className="font-bold text-slate-700 block mb-1">Delivery Type:</label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
@@ -211,7 +212,7 @@ export function DeliveryExecution({ delivery, onBack }: DeliveryExecutionProps) 
                         : "bg-slate-50 text-slate-700 border-slate-200"
                     }`}
                   >
-                    Full Consignment
+                    Full Delivery
                   </button>
                   <button
                     type="button"
@@ -257,6 +258,49 @@ export function DeliveryExecution({ delivery, onBack }: DeliveryExecutionProps) 
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Payment Display Breakdown */}
+            <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2 text-xs">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                Payment Breakdown
+              </span>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-600">Invoice Amount:</span>
+                <span className="font-extrabold text-slate-900 font-mono">
+                  {formatCurrency(order?.totalAmount || delivery.amountToCollect || 0)}
+                </span>
+              </div>
+
+              {paymentMode === "Credit" ? (
+                <>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-600">Payment:</span>
+                    <span className="font-bold text-blue-900 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                      Credit
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-200">
+                    <span className="font-bold text-slate-700">Collect Now:</span>
+                    <span className="font-extrabold text-emerald-700 font-mono text-sm">
+                      ₹0
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-600">Payment Method:</span>
+                    <span className="font-bold text-slate-900">{paymentMode}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-200">
+                    <span className="font-bold text-slate-700">Amount to Collect:</span>
+                    <span className="font-extrabold text-blue-900 font-mono text-sm">
+                      {formatCurrency(collectedAmt)}
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Proof of Delivery (OTP / Signature / Photo) */}
@@ -389,7 +433,7 @@ export function DeliveryExecution({ delivery, onBack }: DeliveryExecutionProps) 
               <XCircle className="w-4 h-4 text-rose-700" /> Delivery Failed: {delivery.failureReason}
             </h4>
             <p className="text-[11px] text-rose-800 mt-1">
-              Consignment flagged for return to Jaipur Main Warehouse.
+              Order flagged for return to Jaipur Main Warehouse.
             </p>
           </div>
         )}

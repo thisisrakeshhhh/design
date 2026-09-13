@@ -54,25 +54,25 @@ export const DEMO_STEPS = [
   },
   {
     step: 5,
-    role: "Warehouse Manager",
+    role: "Warehouse",
     targetRole: "warehouse",
     title: "Pick & Pack Products",
     description:
-      "Switch to Manoj Sharma (Warehouse). The order appears in 'Pending Orders'. Start picking, verify picked quantities against available inventory, and specify carton count.",
+      "Switch to Manoj Sharma (Warehouse). The order appears in 'Orders to Pick'. Start picking, verify picked quantities against available inventory, and specify carton count.",
     actionPrompt: "Click 'Start Picking', confirm carton count, and click 'Mark as Packed'.",
   },
   {
     step: 6,
-    role: "Warehouse Manager",
+    role: "Warehouse",
     targetRole: "warehouse",
     title: "Assign & Stage for Dispatch",
     description:
-      "Assign Suresh Yadav (Senior Logistics Executive) as the delivery executive and mark the order ready for dispatch.",
+      "Assign Suresh Yadav as the delivery driver and mark the order ready for dispatch.",
     actionPrompt: "Select Suresh Yadav and click 'Ready for Dispatch'.",
   },
   {
     step: 7,
-    role: "Delivery Executive",
+    role: "Delivery",
     targetRole: "delivery",
     title: "Deliver to Shop & Verify OTP",
     description:

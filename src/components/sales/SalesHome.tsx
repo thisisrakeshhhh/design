@@ -194,7 +194,7 @@ export function SalesHome() {
               Owner: Mohan Sharma • Sector 9, Mansarovar
             </p>
             <p className="text-[11px] text-slate-500 mt-1">
-              Outstanding: <strong className="text-slate-900">₹3,250</strong> • Credit Limit: ₹20,000
+              Payment Due: <strong className="text-slate-900">₹3,250</strong> • Credit Limit: ₹20,000
             </p>
           </div>
 

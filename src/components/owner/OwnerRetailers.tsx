@@ -69,7 +69,7 @@ export function OwnerRetailers() {
               <th className="py-3 px-4">Retailer / Shop</th>
               <th className="py-3 px-4">Owner</th>
               <th className="py-3 px-4">Area / Beat</th>
-              <th className="py-3 px-4 text-right">Outstanding</th>
+              <th className="py-3 px-4 text-right">Payment Due</th>
               <th className="py-3 px-4 text-right">Credit Limit</th>
               <th className="py-3 px-4 text-center">Status</th>
               <th className="py-3 px-4 text-right">Action</th>
@@ -165,7 +165,7 @@ export function OwnerRetailers() {
               <div className="grid grid-cols-2 gap-2 text-xs py-2 border-y border-slate-100">
                 <div>
                   <span className="text-[10px] text-slate-400 uppercase font-bold block">
-                    Outstanding
+                    Payment Due
                   </span>
                   <span
                     className={`font-extrabold text-sm ${

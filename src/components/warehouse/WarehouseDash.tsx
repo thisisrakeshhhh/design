@@ -63,7 +63,7 @@ export function WarehouseDash() {
             onClick={() => setActiveTab("pending-orders")}
             className="px-3.5 py-2 bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-colors min-h-[40px] shrink-0"
           >
-            <span>Open Picking Queue</span>
+            <span>Orders to Pick</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -125,7 +125,7 @@ export function WarehouseDash() {
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-sm font-bold text-slate-900">Fulfilment Queue</h3>
+              <h3 className="text-sm font-bold text-slate-900">Orders to Pack</h3>
               <p className="text-xs text-slate-500">Orders ready for picking & packing</p>
             </div>
             <button
@@ -167,14 +167,14 @@ export function WarehouseDash() {
         <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="text-sm font-bold text-slate-900">Critical Stock Bins</h3>
-              <p className="text-xs text-slate-500">Fast-moving SKUs requiring replenishment</p>
+              <h3 className="text-sm font-bold text-slate-900">Low Stock Products</h3>
+              <p className="text-xs text-slate-500">Products below minimum limit</p>
             </div>
             <button
               onClick={() => setActiveTab("inventory")}
               className="text-xs font-bold text-blue-700 hover:underline"
             >
-              Warehouse Inventory →
+              Warehouse Stock →
             </button>
           </div>
 

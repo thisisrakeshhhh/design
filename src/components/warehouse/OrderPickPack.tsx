@@ -94,7 +94,7 @@ export function OrderPickPack({ order, onBack }: OrderPickPackProps) {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
           <div>
             <span className="text-[10px] font-extrabold uppercase text-blue-800 bg-blue-50 px-2 py-0.5 rounded">
-              Wholesale Order Picking Slip
+              Pick Order
             </span>
             <h2 className="text-xl font-extrabold text-slate-950 mt-1">
               {order.orderNumber}
