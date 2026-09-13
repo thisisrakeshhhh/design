@@ -17,10 +17,10 @@ It is custom-tailored for an Indian wholesale distributor operating in **Jaipur,
 ## Key Features & Highlights
 
 - **4 Specialized Role Perspectives**:
-  1. **Owner (`Amit Agarwal`)**: Executive governance, live sales dashboard, credit approvals, inventory valuation, beat route overview, quotas, and business analytics.
-  2. **Salesperson (`Rakesh Kumar`)**: Mobile-first field sales app, sequenced Mansarovar West beat visits, shelf stock audits, wholesale order booking with auto *Buy 10 get 1 free* promo on Premium Tea, and on-field payment collection with digital receipts.
-  3. **Warehouse Manager (`Manoj Sharma`)**: Picking queue, carton count packing, damage return inspection, and staging for dispatch.
-  4. **Delivery Executive (`Suresh Yadav`)**: Trip manifest, turn-by-turn navigation link, customer OTP delivery proof (sample `4829`), failure reasons handling, and cashier cash settlement.
+  1. **Owner (`Amit Agarwal`)**: Executive control, live sales dashboard, credit approval, stock value, beat route overview, quotas, and business analytics.
+  2. **Salesperson (`Rakesh Kumar`)**: Mobile-first field sales app, sequenced Mansarovar West beat visits, shop stock audits, wholesale order booking with auto *Buy 10 get 1 free* promo on Premium Tea, and on-field payment collection with digital receipts.
+  3. **Warehouse (`Manoj Sharma`)**: Orders to Pick, Orders to Pack, carton packing, damage return inspection, and staging for delivery.
+  4. **Delivery (`Suresh Yadav`)**: Today's deliveries, turn-by-turn navigation link, customer OTP delivery proof (sample `4829`), failure reasons handling, and cashier cash settlement.
 - **Zero Dead Buttons**: Every single tab, button, modal, and filter performs a live action or opens a responsive sheet.
 - **Cross-Role Live Synchronization**: State changes persist across roles via typed Zustand store backed by browser `localStorage`.
 - **Instant Role Switcher**: Presenters can jump between roles at any time from the top header without logging out.
